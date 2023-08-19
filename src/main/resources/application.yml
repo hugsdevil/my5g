@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: jdbc:log4jdbc:mariadb://${mariadb.host}:3306/${mariadb.database}?characterEncoding=utf-8&allowMultiQueries=true
+    username: ${mariadb.username}
+    password: ${mariadb.password}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: /oauth2/authorization/my5g
+      client:
+        registration:
+          my5g: # registration.id
+            client-id: ${keycloak.resource}
+            client-name: my5g
+            provider: keycloak
+            authorization-grant-type: authorization_code
+            scope: openid, profile
+            redirect-uri: ${server.url}/login/oauth2/code/my5g
+        provider:
+          keycloak: # provider.id
+            authorization-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/auth
+            jwk-set-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/certs
+            token-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+            # would be cool if there was a end-session-uri to propagate logouts
+            # User info endpoint not needed since Keycloak uses self-contained value tokens
+            # user-info-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/userinfo
+            user-name-attribute: ${keycloak.principal-attribute}
+
+keycloak:
+  auth-server-url: ${keycloak.url}
+  realm: ${keycloak.realm-id}
+  resource: ${keyclock.client-id}
+  ssl-required: external
+  verify-token-audience: true
+  use-resource-role-mappings: true
+  confidential-port: 0
+  principal-attribute: preferred_username
